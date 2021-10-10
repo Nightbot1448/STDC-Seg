@@ -188,9 +188,10 @@ def compute_latency_ms_pytorch(model, input_size, iterations=None, device=None):
     torch.backends.cudnn.benchmark = True
 
     model.eval()
-    model = model.cpu()
-    input = torch.randn(*input_size)
-    
+    # model = model.cpu()
+    # input = torch.randn(*input_size)
+    model = model.cuda()
+    input = torch.randn(*input_size).cuda()
 
     with torch.no_grad():
         for _ in range(10):

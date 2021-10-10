@@ -1,6 +1,0 @@
-__pycache__/
-init_trt.sh
-Dockerfile_old
-evaluation_logs
-checkpoints
-.vscode

@@ -143,7 +143,7 @@ def train():
     args = parse_args()
     
     save_pth_path = os.path.join(args.respath, 'pths')
-    dspth = '/home/dmo/Documents/RnD/datasets/cityscapes/'
+    dspth = './data'
     
     # print(save_pth_path)
     # print(osp.exists(save_pth_path))
@@ -176,7 +176,6 @@ def train():
     randomscale = (0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0, 1.125, 1.25, 1.375, 1.5)
 
     if dist.get_rank()==0: 
-        logger.info('n_img_per_gpu: {}'.format(n_img_per_gpu))
         logger.info('n_workers_train: {}'.format(n_workers_train))
         logger.info('n_workers_val: {}'.format(n_workers_val))
         logger.info('use_boundary_2: {}'.format(use_boundary_2))
@@ -290,12 +289,6 @@ def train():
 
         if (not use_boundary_2) and (not use_boundary_4) and (not use_boundary_8):
             out, out16, out32 = net(im)
-
-        logger.info('out  : {}'.format(out.shape))
-        logger.info('out16: {}'.format(out16.shape))
-        logger.info('out32: {}'.format(out32.shape))
-        logger.info('detail: {}'.format(detail8.shape))
-        logger.info('label: {}'.format(lb.shape))
 
         lossp = criteria_p(out, lb)
         loss2 = criteria_16(out16, lb)

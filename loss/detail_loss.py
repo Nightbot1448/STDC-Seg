@@ -1,12 +1,10 @@
 
 import torch
-from torch import log, nn
+from torch import nn
 from torch.nn import functional as F
 import cv2
 import numpy as np
 import json
-
-import logging
 
 def dice_loss_func(input, target):
     smooth = 1.
@@ -38,7 +36,6 @@ def get_boundary(gtmasks):
     boundary_targets[boundary_targets <= 0.1] = 0
     return boundary_targets
 
-logger = logging.getLogger()
 
 class DetailAggregateLoss(nn.Module):
     def __init__(self, *args, **kwargs):
@@ -52,8 +49,6 @@ class DetailAggregateLoss(nn.Module):
             dtype=torch.float32).reshape(1, 3, 1, 1).type(torch.cuda.FloatTensor))
 
     def forward(self, boundary_logits, gtmasks):
-
-        logger.info('loss. start. input: {}, label: {}'.format(boundary_logits.shape, gtmasks.shape))
 
         # boundary_logits = boundary_logits.unsqueeze(1)
         boundary_targets = F.conv2d(gtmasks.unsqueeze(1).type(torch.cuda.FloatTensor), self.laplacian_kernel, padding=1)
@@ -92,17 +87,12 @@ class DetailAggregateLoss(nn.Module):
 
         boudary_targets_pyramid[boudary_targets_pyramid > 0.1] = 1
         boudary_targets_pyramid[boudary_targets_pyramid <= 0.1] = 0
-
-
         
         
         if boundary_logits.shape[-1] != boundary_targets.shape[-1]:
-            logger.info(f'loss. Interpolation. from: {boundary_logits.shape}. to: {boundary_targets.shape}')
             boundary_logits = F.interpolate(
                 boundary_logits, boundary_targets.shape[2:], mode='bilinear', align_corners=True)
         
-        logger.info('loss. before CEwl. input: {}, label: {}'.format(boundary_logits.shape, boudary_targets_pyramid.shape))
-
         bce_loss = F.binary_cross_entropy_with_logits(boundary_logits, boudary_targets_pyramid)
         dice_loss = dice_loss_func(torch.sigmoid(boundary_logits), boudary_targets_pyramid)
         return bce_loss,  dice_loss
